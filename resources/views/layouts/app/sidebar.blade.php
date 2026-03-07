@@ -15,18 +15,21 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="video-camera" :href="route('admin.cameras')" :current="request()->routeIs('admin.cameras')" wire:navigate>
+                        {{ __('Cameras') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
+                <flux:sidebar.item icon="shield-check" href="#" onclick="alert('Security monitoring active')">
+                    {{ __('Security Status') }}
                 </flux:sidebar.item>
 
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
+                <flux:sidebar.item icon="cog" href="#" onclick="alert('Stream settings coming soon')">
+                    {{ __('Stream Settings') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 

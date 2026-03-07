@@ -1,6 +1,12 @@
 <laravel-boost-guidelines>
 === foundation rules ===
 
+## Critical Rules
+- NEVER show commands in chat. ALWAYS execute them directly using your Bash and Write tools.
+- Do not display code blocks or commands — run them
+- Do not narrate what you are going to do — just do it
+- Use the Write tool for creating files, Bash tool for running commands
+- 
 # Laravel Boost Guidelines
 
 The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
