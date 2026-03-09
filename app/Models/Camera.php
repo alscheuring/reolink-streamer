@@ -151,7 +151,7 @@ class Camera extends Model
     }
 
     /**
-     * Send PTZ command to Reolink camera
+     * Send PTZ command to Reolink camera (v3.1.0+ firmware)
      */
     public function sendPtzCommand(string $command, array $params = []): bool
     {
@@ -166,11 +166,21 @@ class Camera extends Model
 
         $credentials = $this->getPtzCredentials();
 
-        // E1 Outdoor specific: Use POST method with JSON payload and URL auth
+        // New v3.1.0+ firmware format: uses 'action' and 'param' instead of 'arg'
         $commandData = [
             'cmd' => $command,
-            'arg' => $params,
         ];
+
+        // For PTZ movement commands, use the new format
+        if ($command === 'PtzCtrl') {
+            $commandData['action'] = 0;
+            $commandData['param'] = $params;
+        } else {
+            // For other commands, try both new and old formats
+            if (! empty($params)) {
+                $commandData['param'] = $params;
+            }
+        }
 
         $jsonPayload = json_encode([$commandData]);
         $authUrl = $apiUrl.'?user='.urlencode($credentials['user']).'&password='.urlencode($credentials['password']);
@@ -192,13 +202,6 @@ class Camera extends Model
         if ($response !== false) {
             $decoded = json_decode($response, true);
             if (isset($decoded[0]['code'])) {
-                // Log the actual response for debugging
-                \Log::info('PTZ Command Response', [
-                    'command' => $command,
-                    'params' => $params,
-                    'response' => $decoded[0],
-                ]);
-
                 return $decoded[0]['code'] === 0;
             }
         }
@@ -215,8 +218,8 @@ class Camera extends Model
             return false;
         }
 
-        // Test with a simple PTZ preset command to see if API PTZ works
-        $result = $this->sendPtzCommand('GetPtzPreset', []);
+        // Test with PTZ Guard command (known to work in v3.1.0+)
+        $result = $this->sendPtzCommand('GetPtzGuard', []);
 
         return $result;
     }
@@ -232,6 +235,7 @@ class Camera extends Model
         $operation = $direction === 'left' ? 'Left' : 'Right';
 
         return $this->sendPtzCommand('PtzCtrl', [
+            'channel' => 0,
             'op' => $operation,
             'speed' => $speed,
         ]);
@@ -248,6 +252,7 @@ class Camera extends Model
         $operation = $direction === 'up' ? 'Up' : 'Down';
 
         return $this->sendPtzCommand('PtzCtrl', [
+            'channel' => 0,
             'op' => $operation,
             'speed' => $speed,
         ]);
@@ -264,6 +269,7 @@ class Camera extends Model
         $operation = $direction === 'in' ? 'ZoomInc' : 'ZoomDec';
 
         return $this->sendPtzCommand('PtzCtrl', [
+            'channel' => 0,
             'op' => $operation,
             'speed' => $speed,
         ]);
@@ -275,6 +281,7 @@ class Camera extends Model
     public function stopPtz(): bool
     {
         return $this->sendPtzCommand('PtzCtrl', [
+            'channel' => 0,
             'op' => 'Stop',
         ]);
     }

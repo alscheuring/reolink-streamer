@@ -16,11 +16,6 @@ class PtzControls extends Component
     public function mount(Camera $camera): void
     {
         $this->camera = $camera;
-
-        // Check if PTZ actually works via API for this camera
-        if ($this->camera->has_ptz && ! $this->camera->hasFunctionalPtz()) {
-            $this->addError('ptz_compatibility', 'PTZ controls work in the Reolink app but are not available via API for this camera model/firmware version. Use the Reolink mobile app for PTZ control.');
-        }
     }
 
     public function pan(string $direction): void
