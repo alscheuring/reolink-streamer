@@ -1,0 +1,68 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+
+# Docker files (except configs)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Development files
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (will be installed in container)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Vendor directory (will be installed in container)
+/vendor
+
+# Build artifacts
+/public/hot
+/public/build
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Cache and temp files
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*
+!storage/framework/cache/.gitignore
+!storage/framework/sessions/.gitignore
+!storage/framework/views/.gitignore
+!bootstrap/cache/.gitignore
+
+# Test files
+/tests
+phpunit.xml
+.phpunit.result.cache
+
+# Local database (will be mounted as volume)
+/database/database.sqlite
+
+# Coverage reports
+coverage
+.nyc_output
+
+# Miscellaneous
+*.log

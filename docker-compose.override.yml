@@ -1,0 +1,48 @@
+# Development overrides (automatically applied with docker-compose)
+services:
+  app:
+    build:
+      target: app-development
+    volumes:
+      # Mount entire source code for development
+      - .:/var/www/html
+      # Exclude node_modules and vendor from host
+      - /var/www/html/node_modules
+      - /var/www/html/vendor
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8080
+    ports:
+      - "8080:80"
+      # Expose Vite dev server
+      - "5173:5173"
+    command: >
+      sh -c "
+        composer install &&
+        php artisan key:generate --force &&
+        touch database/database.sqlite &&
+        php artisan migrate --force &&
+        npm install &&
+        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+      "
+
+  # Separate Vite development server for hot reloading
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: php-base
+    container_name: reolink-streamer-vite
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/node_modules
+    working_dir: /var/www/html
+    command: npm run dev
+    environment:
+      - VITE_HOST=0.0.0.0
+      - VITE_PORT=5173
+    networks:
+      - reolink-network
