@@ -1,0 +1,50 @@
+# Ubuntu-based Docker Compose (more reliable PHP extensions)
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: reolink-streamer-ubuntu
+    ports:
+      - "8080:80"
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/node_modules
+      - /var/www/html/vendor
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8080
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+    restart: unless-stopped
+    networks:
+      - reolink-network
+    command: >
+      bash -c "
+        # Set permissions
+        chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
+        chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
+
+        # Install dependencies
+        composer install --no-interaction &&
+        npm install &&
+
+        # Laravel setup
+        php artisan key:generate --force &&
+        touch /var/www/html/database/database.sqlite &&
+        chown www-data:www-data /var/www/html/database/database.sqlite &&
+        chmod 664 /var/www/html/database/database.sqlite &&
+        php artisan migrate --force &&
+
+        # Build assets
+        npm run build &&
+
+        # Start services
+        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+      "
+
+networks:
+  reolink-network:
+    driver: bridge

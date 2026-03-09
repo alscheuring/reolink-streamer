@@ -1,0 +1,79 @@
+# Working Dockerfile - builds assets at runtime to avoid vendor dependency issues
+FROM php:8.3-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    libfreetype6-dev \
+    libicu-dev \
+    libjpeg62-turbo-dev \
+    libonig-dev \
+    libpng-dev \
+    libsqlite3-dev \
+    libzip-dev \
+    nginx \
+    sqlite3 \
+    supervisor \
+    unzip \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        bcmath \
+        exif \
+        gd \
+        intl \
+        mbstring \
+        opcache \
+        pdo \
+        pdo_sqlite \
+        pcntl \
+        zip
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Configure PHP-FPM
+RUN sed -i 's/listen = 127.0.0.1:9000/listen = \/run\/php\/php8.3-fpm.sock/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;listen.owner = www-data/listen.owner = www-data/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;listen.group = www-data/listen.group = www-data/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;listen.mode = 0660/listen.mode = 0660/' /usr/local/etc/php-fpm.d/www.conf
+
+# Create directories
+RUN mkdir -p /run/php /var/log/supervisor
+
+# Copy PHP configuration
+COPY docker/php/php-dev.ini /usr/local/etc/php/conf.d/99-app.ini
+
+# Copy Nginx configuration
+COPY docker/nginx/nginx-simple.conf /etc/nginx/nginx.conf
+COPY docker/nginx/default-simple.conf /etc/nginx/sites-available/default
+
+# Copy Supervisor configuration
+COPY docker/supervisor/supervisord-simple.conf /etc/supervisor/conf.d/supervisord.conf
+
+WORKDIR /var/www/html
+
+# Copy application files
+COPY . .
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
+
+EXPOSE 80
+
+# Entry point script that will install dependencies and build assets
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
