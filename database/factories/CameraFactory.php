@@ -28,6 +28,35 @@ class CameraFactory extends Factory
             'snapshot_url' => "http://{$ip}/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C&user={$username}&password={$password}",
             'is_active' => rand(1, 10) > 1, // 90% chance of being active
             'sort_order' => rand(0, 100),
+            'has_ptz' => rand(1, 10) > 7, // 30% chance of having PTZ
+            'ptz_username' => $username,
+            'ptz_password' => $password,
+            'ptz_api_url' => null, // Will be auto-generated from RTSP URL
         ];
+    }
+
+    /**
+     * Create a camera with PTZ capabilities
+     */
+    public function withPtz(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'has_ptz' => true,
+            'ptz_username' => 'admin',
+            'ptz_password' => 'password123',
+        ]);
+    }
+
+    /**
+     * Create a camera without PTZ capabilities
+     */
+    public function withoutPtz(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'has_ptz' => false,
+            'ptz_username' => null,
+            'ptz_password' => null,
+            'ptz_api_url' => null,
+        ]);
     }
 }

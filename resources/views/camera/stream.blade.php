@@ -21,9 +21,10 @@
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col gap-4">
+        <div class="flex-1 flex gap-4">
             <!-- Main Stream Area -->
-            <div class="relative flex-1 min-h-96 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-black">
+            <div class="flex-1 flex flex-col gap-4">
+                <div class="relative flex-1 min-h-96 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-black">
                 @if($camera->snapshot_url)
                     <!-- For now, show the snapshot image as a placeholder -->
                     <img
@@ -73,40 +74,45 @@
                         </flux:button>
                     </div>
                 </div>
+
+                <!-- Stream Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <flux:card>
+                        <div class="p-4">
+                            <flux:text variant="muted" size="sm">Camera Status</flux:text>
+                            <div class="flex items-center gap-2 mt-1">
+                                <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                                <flux:text class="font-medium">Online</flux:text>
+                            </div>
+                        </div>
+                    </flux:card>
+
+                    <flux:card>
+                        <div class="p-4">
+                            <flux:text variant="muted" size="sm">Stream URL</flux:text>
+                            <flux:text class="font-mono text-xs mt-1 break-all">{{ Str::limit($camera->rtsp_url, 30) }}</flux:text>
+                        </div>
+                    </flux:card>
+
+                    <flux:card>
+                        <div class="p-4">
+                            <flux:text variant="muted" size="sm">Actions</flux:text>
+                            <div class="flex gap-2 mt-2">
+                                <flux:button size="sm" variant="outline" icon="arrow-path" onclick="refreshStream()">
+                                    Refresh
+                                </flux:button>
+                                <flux:button size="sm" variant="outline" icon="cog-6-tooth" :href="route('admin.cameras')" wire:navigate>
+                                    Settings
+                                </flux:button>
+                            </div>
+                        </div>
+                    </flux:card>
+                </div>
             </div>
 
-            <!-- Stream Information -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <flux:card>
-                    <div class="p-4">
-                        <flux:text variant="muted" size="sm">Camera Status</flux:text>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="w-2 h-2 rounded-full bg-green-400"></div>
-                            <flux:text class="font-medium">Online</flux:text>
-                        </div>
-                    </div>
-                </flux:card>
-
-                <flux:card>
-                    <div class="p-4">
-                        <flux:text variant="muted" size="sm">Stream URL</flux:text>
-                        <flux:text class="font-mono text-xs mt-1 break-all">{{ Str::limit($camera->rtsp_url, 30) }}</flux:text>
-                    </div>
-                </flux:card>
-
-                <flux:card>
-                    <div class="p-4">
-                        <flux:text variant="muted" size="sm">Actions</flux:text>
-                        <div class="flex gap-2 mt-2">
-                            <flux:button size="sm" variant="outline" icon="arrow-path" onclick="refreshStream()">
-                                Refresh
-                            </flux:button>
-                            <flux:button size="sm" variant="outline" icon="cog-6-tooth" :href="route('admin.cameras')" wire:navigate>
-                                Settings
-                            </flux:button>
-                        </div>
-                    </div>
-                </flux:card>
+            <!-- PTZ Controls Sidebar -->
+            <div class="w-80 flex-shrink-0">
+                <livewire:camera.ptz-controls :camera="$camera" />
             </div>
         </div>
     </div>

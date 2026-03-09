@@ -91,9 +91,102 @@ it('has fillable attributes', function () {
         'snapshot_url',
         'is_active',
         'sort_order',
+        'has_ptz',
+        'ptz_username',
+        'ptz_password',
+        'ptz_api_url',
     ];
 
     $camera = new Camera;
 
     expect($camera->getFillable())->toBe($fillable);
+});
+
+// PTZ Functionality Tests
+
+it('casts ptz attributes to correct types', function () {
+    $camera = Camera::factory()->withPtz()->create([
+        'has_ptz' => '1',
+    ]);
+
+    expect($camera->has_ptz)->toBeBool()->toBeTrue();
+});
+
+it('generates ptz api url from rtsp url', function () {
+    $camera = Camera::factory()->withPtz()->create([
+        'rtsp_url' => 'rtsp://admin:password@192.168.1.150:554/h264Preview_01_main',
+        'ptz_api_url' => null,
+    ]);
+
+    $ptzApiUrl = $camera->getPtzApiUrl();
+
+    expect($ptzApiUrl)->toBe('http://192.168.1.150/cgi-bin/api.cgi');
+});
+
+it('uses custom ptz api url when set', function () {
+    $customUrl = 'http://192.168.1.100/custom/api.cgi';
+    $camera = Camera::factory()->withPtz()->create([
+        'ptz_api_url' => $customUrl,
+    ]);
+
+    expect($camera->getPtzApiUrl())->toBe($customUrl);
+});
+
+it('extracts ptz credentials from rtsp url when ptz credentials not set', function () {
+    $camera = Camera::factory()->create([
+        'rtsp_url' => 'rtsp://testuser:testpass@192.168.1.150:554/h264Preview_01_main',
+        'ptz_username' => null,
+        'ptz_password' => null,
+    ]);
+
+    $credentials = $camera->getPtzCredentials();
+
+    expect($credentials['user'])->toBe('testuser')
+        ->and($credentials['password'])->toBe('testpass');
+});
+
+it('uses ptz credentials when set', function () {
+    $camera = Camera::factory()->withPtz()->create([
+        'ptz_username' => 'ptzuser',
+        'ptz_password' => 'ptzpass',
+    ]);
+
+    $credentials = $camera->getPtzCredentials();
+
+    expect($credentials['user'])->toBe('ptzuser')
+        ->and($credentials['password'])->toBe('ptzpass');
+});
+
+it('returns default credentials when no credentials available', function () {
+    $camera = Camera::factory()->create([
+        'rtsp_url' => 'rtsp://192.168.1.150:554/h264Preview_01_main', // No auth in URL
+        'ptz_username' => null,
+        'ptz_password' => null,
+    ]);
+
+    $credentials = $camera->getPtzCredentials();
+
+    expect($credentials['user'])->toBe('admin')
+        ->and($credentials['password'])->toBe('');
+});
+
+it('returns false for ptz commands when camera has no ptz', function () {
+    $camera = Camera::factory()->withoutPtz()->create();
+
+    expect($camera->pan('left'))->toBeFalse()
+        ->and($camera->tilt('up'))->toBeFalse()
+        ->and($camera->zoom('in'))->toBeFalse()
+        ->and($camera->stopPtz())->toBeFalse();
+});
+
+it('returns false for ptz commands when no api url available', function () {
+    $camera = Camera::factory()->withPtz()->create([
+        'rtsp_url' => 'invalid-url-format',
+        'ptz_api_url' => null,
+    ]);
+
+    expect($camera->pan('left'))->toBeFalse()
+        ->and($camera->tilt('up'))->toBeFalse()
+        ->and($camera->zoom('in'))->toBeFalse()
+        ->and($camera->stopPtz())->toBeFalse();
 });
