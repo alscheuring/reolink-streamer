@@ -50,29 +50,29 @@ This runs optimized production containers with:
 
 ```bash
 # Build and start development environment
-docker-compose up --build
+docker compose up --build
 
 # Run in background
-docker-compose up --build -d
+docker compose up --build -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
 ### Production
 
 ```bash
 # Build and start production environment
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
 # View logs
-docker-compose logs -f app
+docker compose logs -f app
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
 ## Available Scripts
@@ -141,13 +141,13 @@ The application uses SQLite by default, which simplifies Docker setup:
 
 ```bash
 # Run migrations
-docker-compose exec app php artisan migrate
+docker compose exec app php artisan migrate
 
 # Seed database
-docker-compose exec app php artisan db:seed
+docker compose exec app php artisan db:seed
 
 # Access database shell
-docker-compose exec app sqlite3 database/database.sqlite
+docker compose exec app sqlite3 database/database.sqlite
 ```
 
 ## Development Workflow
@@ -161,8 +161,8 @@ docker-compose exec app sqlite3 database/database.sqlite
 
 3. **Run Laravel commands**:
    ```bash
-   docker-compose exec app php artisan migrate
-   docker-compose exec app php artisan make:controller CameraController
+   docker compose exec app php artisan migrate
+   docker compose exec app php artisan make:controller CameraController
    ```
 
 4. **View logs**:
@@ -212,19 +212,19 @@ docker push your-registry/reolink-streamer:latest
 
 ```bash
 # Check container status
-docker-compose ps
+docker compose ps
 
 # View detailed logs
-docker-compose logs -f app
+docker compose logs -f app
 
 # Access container shell
-docker-compose exec app sh
+docker compose exec app sh
 
 # Check PHP configuration
-docker-compose exec app php -i
+docker compose exec app php -i
 
 # Test Nginx configuration
-docker-compose exec app nginx -t
+docker compose exec app nginx -t
 ```
 
 ### Performance Optimization
@@ -247,14 +247,14 @@ docker-compose exec app nginx -t
 
 ```bash
 # Pull latest base images
-docker-compose pull
+docker compose pull
 
 # Rebuild with updates
 ./docker-run.sh build
 
 # Apply Laravel updates
-docker-compose exec app composer update
-docker-compose exec app php artisan migrate
+docker compose exec app composer update
+docker compose exec app php artisan migrate
 ```
 
 ### Backups

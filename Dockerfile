@@ -121,11 +121,11 @@ COPY docker/php/php-dev.ini /usr/local/etc/php/conf.d/99-app.ini
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
-# Copy Supervisor configuration
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy Supervisor configuration (development includes Vite)
+COPY docker/supervisor/supervisord-dev.conf /etc/supervisor/conf.d/supervisord.conf
 
 WORKDIR /var/www/html
 
-EXPOSE 80
+EXPOSE 80 5173
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

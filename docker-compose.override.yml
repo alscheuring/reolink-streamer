@@ -19,28 +19,29 @@ services:
       - "5173:5173"
     command: >
       sh -c "
+        chown -R nginx:nginx /var/www/html &&
         composer install &&
         php artisan key:generate --force &&
         touch database/database.sqlite &&
+        chown nginx:nginx database/database.sqlite &&
+        chmod 664 database/database.sqlite &&
         php artisan migrate --force &&
         npm install &&
+        npm run build &&
         /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
       "
 
   # Separate Vite development server for hot reloading
   vite:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: php-base
+    image: node:22-alpine
     container_name: reolink-streamer-vite
     ports:
       - "5173:5173"
     volumes:
-      - .:/var/www/html
-      - /var/www/html/node_modules
-    working_dir: /var/www/html
-    command: npm run dev
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     environment:
       - VITE_HOST=0.0.0.0
       - VITE_PORT=5173

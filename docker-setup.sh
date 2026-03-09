@@ -97,7 +97,7 @@ generate_key() {
 build_containers() {
     print_status "Building Docker containers (this may take a few minutes)..."
 
-    if docker-compose build; then
+    if docker compose build; then
         print_success "Docker containers built successfully!"
     else
         print_error "Failed to build Docker containers"
@@ -110,18 +110,18 @@ init_app() {
     print_status "Initializing Laravel application..."
 
     # Start containers temporarily for initialization
-    docker-compose up -d
+    docker compose up -d
 
     # Wait for containers to be ready
     sleep 10
 
     # Run initial setup commands
-    docker-compose exec -T app php artisan key:generate --force || true
-    docker-compose exec -T app php artisan migrate --force || true
-    docker-compose exec -T app php artisan storage:link || true
+    docker compose exec -T app php artisan key:generate --force || true
+    docker compose exec -T app php artisan migrate --force || true
+    docker compose exec -T app php artisan storage:link || true
 
     # Stop containers
-    docker-compose down
+    docker compose down
 
     print_success "Application initialized!"
 }

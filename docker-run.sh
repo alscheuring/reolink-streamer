@@ -74,49 +74,70 @@ main() {
     case "${1:-dev}" in
         "dev"|"development")
             print_status "Starting development environment..."
-            docker-compose up --build
+            docker compose up --build
+            ;;
+        "simple")
+            print_status "Starting simple development environment (single container)..."
+            docker compose -f docker-compose.simple.yml up --build
+            ;;
+        "ubuntu")
+            print_status "Starting Ubuntu-based development environment..."
+            docker compose -f docker-compose.ubuntu.yml up --build
+            ;;
+        "working")
+            print_status "Starting working development environment (runtime asset build)..."
+            docker compose -f docker-compose.working.yml up --build
             ;;
         "prod"|"production")
             print_status "Starting production environment..."
-            docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
             print_success "Production environment started!"
             print_status "Application available at: http://localhost:8080"
             ;;
         "build")
             print_status "Building Docker images..."
-            docker-compose build
+            docker compose build
             print_success "Build completed!"
             ;;
         "down")
             print_status "Stopping containers..."
-            docker-compose down
+            docker compose down
+            docker compose -f docker-compose.simple.yml down 2>/dev/null || true
+            docker compose -f docker-compose.ubuntu.yml down 2>/dev/null || true
+            docker compose -f docker-compose.working.yml down 2>/dev/null || true
             print_success "Containers stopped!"
             ;;
         "clean")
             print_status "Cleaning up Docker resources..."
-            docker-compose down --volumes --remove-orphans
+            docker compose down --volumes --remove-orphans
+            docker compose -f docker-compose.simple.yml down --volumes --remove-orphans 2>/dev/null || true
+            docker compose -f docker-compose.ubuntu.yml down --volumes --remove-orphans 2>/dev/null || true
+            docker compose -f docker-compose.working.yml down --volumes --remove-orphans 2>/dev/null || true
             docker system prune -f
             print_success "Cleanup completed!"
             ;;
         "logs")
             print_status "Showing container logs..."
-            docker-compose logs -f
+            docker compose logs -f
             ;;
         "shell")
             print_status "Opening shell in application container..."
-            docker-compose exec app sh
+            docker compose exec app sh
             ;;
         *)
-            echo "Usage: $0 [dev|prod|build|down|clean|logs|shell]"
+            echo "Usage: $0 [dev|simple|ubuntu|working|prod|build|down|clean|logs|shell]"
             echo ""
             echo "Commands:"
-            echo "  dev   - Start development environment (default)"
-            echo "  prod  - Start production environment"
-            echo "  build - Build Docker images"
-            echo "  down  - Stop all containers"
-            echo "  clean - Stop containers and clean up resources"
-            echo "  logs  - Show container logs"
-            echo "  shell - Open shell in app container"
+            echo "  dev     - Start development environment (default)"
+            echo "  simple  - Start simple development environment (Alpine-based)"
+            echo "  ubuntu  - Start Ubuntu-based development environment (better compatibility)"
+            echo "  working - Start working development environment (runtime asset build - RECOMMENDED)"
+            echo "  prod    - Start production environment"
+            echo "  build  - Build Docker images"
+            echo "  down   - Stop all containers"
+            echo "  clean  - Stop containers and clean up resources"
+            echo "  logs   - Show container logs"
+            echo "  shell  - Open shell in app container"
             exit 1
             ;;
     esac
